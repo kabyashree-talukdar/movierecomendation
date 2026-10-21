@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Melojoy — Find your feel-good film</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">✦</span> Melojoy</a>
+    <div class="top-note">Your taste. Your next favourite.</div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">MOVIES FOR EVERY MOOD</div>
+      <h1>Find your <span>feel-good film.</span></h1>
+      <p>Tell us your mood. Melojoy helps you discover a story worth watching, with picks shaped by your preferences and watch history.</p>
+      <div class="hero-pills"><span>Mood-based picks</span><span>Your watch history</span><span>Hidden gems</span></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><div class="eyebrow">YOUR TASTE PROFILE</div><h2>Find your next happy place</h2></div>
+        <span class="step-label">01 / PROFILE</span>
+      </div>
+      <div class="form-grid">
+        <label>Movie you just watched
+          <select id="selectedMovie">
+            {% for movie in movies %}
+            <option value="{{ movie.id }}" {% if movie.title == '3 Idiots' %}selected{% endif %}>{{ movie.title }} ({{ movie.year }})</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Age group <span class="optional">optional</span>
+          <select id="ageGroup">
+            <option value="prefer_not">Prefer not to say</option>
+            <option value="under_18">Under 18</option>
+            <option value="18_24" selected>18–24</option>
+            <option value="25_34">25–34</option>
+            <option value="35_plus">35+</option>
+          </select>
+        </label>
+        <label>Preferred language
+          <select id="language">
+            <option value="Any">Any language</option>
+            <option value="Hindi" selected>Hindi</option>
+          </select>
+        </label>
+        <label>Genres you usually enjoy <span class="optional">choose any</span>
+          <div class="genre-chips" id="genreChips">
+            {% for genre in ['Comedy','Drama','Romance','Action','Thriller','Sport','Mystery','Horror','Adventure','Family','Music','Biography','Crime','Fantasy','History','Psychological','Spy','War','Coming of Age'] %}
+            <label class="chip"><input type="checkbox" value="{{ genre }}" {% if genre in ['Comedy','Drama'] %}checked{% endif %}><span>{{ genre }}</span></label>
+            {% endfor %}
+          </div>
+        </label>
+      </div>
+
+      <div class="history-area">
+        <div class="subheading"><h3>Your watch history</h3><span class="optional">Select movies you have already watched</span></div>
+        <input id="movieSearch" class="search" type="search" placeholder="Search movies to add to your history…">
+        <div class="history-list" id="historyList">
+          {% for movie in movies %}
+          <label class="history-item" data-title="{{ movie.title|lower }}">
+            <input type="checkbox" class="history-check" value="{{ movie.id }}" {% if movie.title in ['3 Idiots','Chhichhore'] %}checked{% endif %}>
+            <span>{{ movie.title }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="rating-area">
+        <div class="subheading"><h3>Movies you loved or disliked</h3><span class="optional">Optional — makes recommendations more personal</span></div>
+        <div class="rating-grid">
+          <label>Loved
+            <select id="likedMovies" multiple size="4">
+              {% for movie in movies %}
+              <option value="{{ movie.id }}" {% if movie.title in ['3 Idiots','Chhichhore'] %}selected{% endif %}>{{ movie.title }}</option>
+              {% endfor %}
+            </select>
+            <small>On Windows, hold Ctrl to select multiple.</small>
+          </label>
+          <label>Not for me
+            <select id="dislikedMovies" multiple size="4">
+              {% for movie in movies %}
+              <option value="{{ movie.id }}">{{ movie.title }}</option>
+              {% endfor %}
+            </select>
+            <small>Movies to avoid recommending again.</small>
+          </label>
+        </div>
+      </div>
+      <button id="recommendBtn" class="primary-btn">✦ Find my feel-good film</button>
+      <p class="privacy-note">Your selections stay in this session. Your selections are used to generate recommendations for this session.</p>
+    </section>
+
+    <section id="resultsSection" class="results-section hidden">
+      <div class="section-heading">
+        <div><div class="eyebrow">YOUR PERSONALIZED PICKS</div><h2>Picked for your vibe</h2></div>
+        <span class="step-label">02 / RESULTS</span>
+      </div>
+      <p class="results-intro" id="resultsIntro">Ranked using multiple preference signals.</p>
+      <div id="recommendationGrid" class="movie-grid"></div>
+      <p class="demo-note">Transparency note: collaborative signals currently use synthetic demo profiles, not real people. Add a real ratings dataset before making claims about real-user behaviour.</p>
+    </section>
+
+    <section class="catalog-section">
+      <div class="section-heading">
+        <div><div class="eyebrow">THE MELOJOY COLLECTION</div><h2>A little joy, one movie at a time</h2></div>
+        <span class="count">{{ movies|length }} curated titles</span>
+      </div>
+      <div class="catalog-tools">
+        <input id="catalogSearch" class="search" type="search" placeholder="Search titles, genres, stories…">
+        <select id="genreFilter"><option value="">All genres</option>{% for genre in ['Comedy','Drama','Romance','Action','Thriller','Sport','Mystery','Horror','Adventure','Family','Music','Biography','Crime','Fantasy','History','Psychological','Spy','War','Coming of Age','Survival'] %}<option>{{ genre }}</option>{% endfor %}</select>
+      </div>
+      <div id="catalogGrid" class="movie-grid">
+        {% for movie in movies %}
+        <article class="movie-card" data-title="{{ movie.title|lower }}" data-text="{{ (movie.title ~ ' ' ~ movie.overview ~ ' ' ~ movie.genres|join(' '))|lower }}" data-genres="{{ movie.genres|join(',') }}">
+          <div class="poster-wrap">
+            <img class="poster-image" data-movie-id="{{ movie.id }}" src="" alt="{{ movie.title }} poster" loading="lazy" style="display:none" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="poster-fallback"><span>✦ CINEMATCH</span><b>{{ movie.title }}</b><small>{{ movie.year }}</small></div>
+            <span class="rating-badge">★ {{ movie.rating }}</span>
+          </div>
+          <div class="movie-info"><h3>{{ movie.title }}</h3><div class="movie-meta">{{ movie.year }} · {{ movie.genres|join(' / ') }}</div><p>{{ movie.overview }}</p>
+            <div class="card-actions"><button class="outline-btn choose-movie" data-id="{{ movie.id }}">Find similar</button><a class="trailer-btn" href="https://www.youtube.com/results?search_query={{ (movie.title ~ ' ' ~ movie.year ~ ' official trailer')|urlencode }}" target="_blank" rel="noopener noreferrer">Watch trailer ↗</a></div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <footer>
+      <div class="brand"><span class="brand-mark">✦</span> Melojoy</div>
+      <p>Made for movie lovers, moods, and stories that stay with you.</p>
+      <p>Movie posters may be provided by TMDB when an API key is configured. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    </footer>
+  </main>
+  <script>
+    window.CINEMATCH_MOVIES = {{ movies|tojson }};
+    window.TMDB_CONFIGURED = {{ tmdb_configured|tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
